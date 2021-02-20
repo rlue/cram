@@ -1,0 +1,51 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative '../lib/cram'
+
+# Parse opts/args --------------------------------------------------------------
+
+require 'optparse'
+
+parser = OptionParser.new do |opts|
+  opts.version = Cram::VERSION
+  opts.banner  = <<~BANNER
+    Usage: cram [-v | --version] [-h | --help] command [<args>]
+  BANNER
+end
+
+begin
+  parser.parse!
+rescue OptionParser::InvalidOption => e
+  warn(e.message)
+  warn(parser.help)
+  exit 1
+end
+
+command = ARGV.shift
+
+# Run command ------------------------------------------------------------------
+
+require 'pathname'
+
+ENV['XDG_DATA_HOME'] ||= Pathname.new(Dir.home).join('.local', 'share').to_s
+
+COMMAND_LOAD_PATH = []
+  .push(Pathname.new(ENV['XDG_DATA_HOME']))
+  .push(Pathname.new(__dir__).join('..', 'share'))
+  .map { |path| path.join('cram') }
+  .select(&File.method(:directory?))
+  .freeze
+
+# TODO: add tab completion
+
+COMMAND_LOAD_PATH
+  .map { |d| d.join(*command.split(':')) }
+  .find { |f| File.file?(f) && File.executable?(f) }
+  &.then { |resolved_command| system(resolved_command.to_s, *ARGV) }
+  &.then { exit 0 }
+
+warn(<<~MSG.chomp)
+  #{parser.program_name}: '#{command}' is not a #{parser.program_name} command.
+MSG
+exit 1
