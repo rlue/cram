@@ -26,7 +26,7 @@ end
 begin
   params = {}
   parser.parse!(into: params)
-rescue OptionParser::InvalidOption => e
+rescue OptionParser::ParseError => e
   warn(e.message)
   warn(parser.help)
   exit 1

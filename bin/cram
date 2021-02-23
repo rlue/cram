@@ -16,7 +16,7 @@ end
 
 begin
   parser.order!
-rescue OptionParser::InvalidOption => e
+rescue OptionParser::ParseError => e
   warn(e.message)
   warn(parser.help)
   exit 1
