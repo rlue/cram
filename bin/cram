@@ -37,8 +37,6 @@ COMMAND_LOAD_PATH = []
   .select(&File.method(:directory?))
   .freeze
 
-# TODO: add tab completion
-
 COMMAND_LOAD_PATH
   .map { |d| d.join(*command.split(':')) }
   .find { |f| File.file?(f) && File.executable?(f) }
