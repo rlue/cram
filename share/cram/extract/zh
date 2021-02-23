@@ -1,0 +1,66 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Parse opts -------------------------------------------------------------------
+
+require 'optparse'
+
+parser = OptionParser.new do |opts|
+  opts.banner = <<~BANNER
+    Usage: cram extract:zh [<options>]
+
+  BANNER
+
+  opts.on('-iFILE', '--ignore=FILE', 'exclude characters from <file> (or first field of <file.csv|file.tsv>)')
+end
+
+begin
+  params = {}
+  parser.parse!(into: params)
+rescue OptionParser::InvalidOption => e
+  warn(e.message)
+  warn(parser.help)
+  exit 1
+end
+
+# Core logic -------------------------------------------------------------------
+
+class String
+  def split_zh
+    split('').uniq.select { |t| t.match?(/\p{Han}/) }
+  end
+
+  def first_field(delimiter)
+    split(delimiter).first
+  end
+end
+
+input_text = begin
+               ARGF.read.split_zh
+             rescue SystemCallError => e
+               warn e.message.split(' @ rb_sysopen - ').reverse.join(': ')
+               exit 1
+             end
+
+if input_text.empty?
+  warn 'No Chinese characters found'
+  exit 1
+end
+
+ignore_list = begin
+                case params[:ignore]
+                when /\.csv$/
+                  File.readlines(params[:ignore]).map { |line| line.first_field(',') }
+                when /\.tsv$/
+                  File.readlines(params[:ignore]).map { |line| line.first_field("\t") }
+                when String
+                  File.read(params[:ignore]).split_zh
+                end
+              rescue SystemCallError => e
+                warn "#{params[:ignore]}: #{e.message.split(' @ ').first}"
+                exit 1
+              end
+
+input_text -= ignore_list if ignore_list
+
+puts input_text
