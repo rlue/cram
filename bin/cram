@@ -15,7 +15,7 @@ parser = OptionParser.new do |opts|
 end
 
 begin
-  parser.parse!
+  parser.order!
 rescue OptionParser::InvalidOption => e
   warn(e.message)
   warn(parser.help)
