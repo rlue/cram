@@ -8,6 +8,10 @@ require 'optparse'
 parser = OptionParser.new do |opts|
   opts.banner = <<~BANNER
     Usage: cram extract:zh [<options>]
+    Print only the Chinese characters from input,
+    one character per line, without duplicates.
+
+    With no <file> (or when <file> is -), read standard input.
 
   BANNER
 
