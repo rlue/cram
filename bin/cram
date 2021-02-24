@@ -3,6 +3,11 @@
 
 require_relative '../lib/cram'
 
+# Handle shell errors (Ctrl+C / broken pipes) ----------------------------------
+# borrowed from https://github.com/chocolateboy/cli-pasta
+Signal.trap('INT', 'SYSTEM_DEFAULT') if Signal.list.include?('INT')
+Signal.trap('PIPE', 'SYSTEM_DEFAULT') if Signal.list.include?('PIPE')
+
 # Parse opts/args --------------------------------------------------------------
 
 require 'optparse'
