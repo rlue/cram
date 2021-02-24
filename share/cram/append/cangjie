@@ -46,38 +46,26 @@ end
 
 # Core logic -------------------------------------------------------------------
 
+require 'csv'
+
 RAW_IM_TABLE = DATA.readlines.freeze
 LETTER_TO_RAD_MAP = RAW_IM_TABLE[12..37].map(&:split).to_h.freeze
 HZ_TO_CJ_MAP = RAW_IM_TABLE[135..-2].map(&:split).map(&:reverse).to_h.freeze
 
-def decompose(hanzi, index)
-  return HZ_TO_CJ_MAP[hanzi] if HZ_TO_CJ_MAP.key?(hanzi)
+CSV.filter(col_sep: params[:delimiter]) do |row|
+  raise "unexpected value: #{row.first}" if !HZ_TO_CJ_MAP.key?(row.first)
 
-  warn "unexpected value on line #{index + 1}: #{hanzi}"
+  row << case params[:format]
+         when :radicals
+           HZ_TO_CJ_MAP[row.first].split('').map { |l| LETTER_TO_RAD_MAP[l.downcase] }.join('')
+         when :alphabet
+           HZ_TO_CJ_MAP[row.first]
+         end
+rescue => e
+  # no-op if e.message !~ /@ rb_sysopen -/
+  warn e.message.split(' @ rb_sysopen - ').reverse.join(': ')
   exit 1
 end
-
-def format_as_alphabet(cj_code)
-  cj_code
-end
-
-def format_as_radicals(cj_code)
-  cj_code.split('').map { |l| LETTER_TO_RAD_MAP[l.downcase] }.join('')
-end
-
-# TODO: validate CSV format?
-input_csv = begin
-              ARGF.readlines.map(&:strip)
-            rescue SystemCallError => e
-              warn e.message.split(' @ rb_sysopen - ').reverse.join(': ')
-              exit 1
-            end
-
-appended_field = input_csv.map { |line| line.split(params[:delimiter]).first }
-                          .map.with_index(&method(:decompose))
-                          .map(&method(:"format_as_#{params[:format]}"))
-
-puts input_csv.zip(appended_field).map { |line| line.join(params[:delimiter]) }
 
 __END__
 #  ChangJei input method table for UTF-8 encoding.
