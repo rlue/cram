@@ -29,6 +29,12 @@ parser = OptionParser.new do |opts|
   )
 
   opts.on(
+    '--[no-]strict',
+    'abort on unexpected input or when lookup fails (default: on)',
+    '(--no-strict: append an empty field)'
+  )
+
+  opts.on(
     '-f=FORMAT', '--format=FORMAT',
     %i[radicals alphabet],
     'show Cangjie codes as [radicals|alphabet]'
@@ -36,7 +42,11 @@ parser = OptionParser.new do |opts|
 end
 
 begin
-  params = { delimiter: ',', format: :radicals }
+  params = {
+    delimiter: ',',
+    format: :radicals,
+    strict: true
+  }
   parser.parse!(into: params)
 rescue OptionParser::ParseError => e
   warn(e.message)
@@ -53,11 +63,14 @@ LETTER_TO_RAD_MAP = RAW_IM_TABLE[12..37].map(&:split).to_h.freeze
 HZ_TO_CJ_MAP = RAW_IM_TABLE[135..-2].map(&:split).map(&:reverse).to_h.freeze
 
 CSV.filter(col_sep: params[:delimiter]) do |row|
-  raise "unexpected value: #{row.first}" if !HZ_TO_CJ_MAP.key?(row.first)
+  raise "unexpected value: #{row.first}" if params[:strict] && !HZ_TO_CJ_MAP.key?(row.first)
 
   row << case params[:format]
          when :radicals
-           HZ_TO_CJ_MAP[row.first].split('').map { |l| LETTER_TO_RAD_MAP[l.downcase] }.join('')
+           HZ_TO_CJ_MAP[row.first]
+             &.split('')
+             &.map { |l| LETTER_TO_RAD_MAP[l.downcase] }
+             &.join('')
          when :alphabet
            HZ_TO_CJ_MAP[row.first]
          end
