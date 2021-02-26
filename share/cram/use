@@ -108,7 +108,7 @@ pipeline = begin
              raise "#{CONFIG_FILE}: config format invalid"
            rescue => e
              # no-op if e.message !~ /@ rb_sysopen -/
-             warn e.message.split(' @ rb_sysopen - ').reverse.join(': ')
+             warn(e.message.split(' @ rb_sysopen - ').reverse.join(': '))
              exit 1
            end
 

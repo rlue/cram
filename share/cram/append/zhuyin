@@ -58,7 +58,7 @@ CSV.filter(col_sep: params[:delimiter]) do |row|
   row << ZHUYIN_TABLE[row.first]
 rescue => e
   # no-op if e.message !~ /@ rb_sysopen -/
-  warn e.message.split(' @ rb_sysopen - ').reverse.join(': ')
+  warn(e.message.split(' @ rb_sysopen - ').reverse.join(': '))
   exit 1
 end
 

@@ -58,12 +58,12 @@ end
 input_text = begin
                ARGF.read.split_zh
              rescue SystemCallError => e
-               warn e.message.split(' @ rb_sysopen - ').reverse.join(': ')
+               warn(e.message.split(' @ rb_sysopen - ').reverse.join(': '))
                exit 1
              end
 
 if input_text.empty?
-  warn 'No Chinese characters found'
+  warn('no Chinese characters found')
   exit 1
 end
 
@@ -79,7 +79,7 @@ input_text -= begin
                   []
                 end
               rescue SystemCallError => e
-                warn "#{params[:ignore]}: #{e.message.split(' @ ').first}"
+                warn(e.message.split(' @ rb_sysopen - ').reverse.join(': '))
                 exit 1
               end
 

@@ -48,7 +48,5 @@ COMMAND_LOAD_PATH
   &.then { |resolved_command| system(resolved_command.to_s, *ARGV) }
   &.then { exit 0 }
 
-warn(<<~MSG.chomp)
-  #{parser.program_name}: '#{command}' is not a #{parser.program_name} command.
-MSG
+warn("#{parser.program_name}: '#{command}' is not a #{parser.program_name} command.")
 exit 1

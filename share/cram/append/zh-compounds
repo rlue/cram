@@ -61,7 +61,7 @@ CSV.filter(col_sep: params[:delimiter]) do |row|
   row[-1] = nil if row[-1].empty?
 rescue => e
   # no-op if e.message !~ /@ rb_sysopen -/
-  warn e.message.split(' @ rb_sysopen - ').reverse.join(': ')
+  warn(e.message.split(' @ rb_sysopen - ').reverse.join(': '))
   exit 1
 end
 
