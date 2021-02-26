@@ -35,6 +35,12 @@ parser = OptionParser.new do |opts|
     'abort on unexpected input (default: on)',
     '(--no-strict: append an empty field)'
   )
+
+  opts.on(
+    '-H', '--omit-headword',
+    'omit headword from results',
+    "(e.g., ～題字 vs. 標題字)"
+  )
 end
 
 begin
@@ -58,7 +64,11 @@ CSV.filter(col_sep: params[:delimiter]) do |row|
   row << WORDS.select { |word| word.include?(row.first) }
               .then { |matches| matches.take(3).join('、') }
 
-  row[-1] = nil if row[-1].empty?
+  if row[-1].empty?
+    row[-1] = nil
+  elsif params[:"omit-headword"]
+    row[-1] = row[-1].tr(row.first, '～')
+  end
 rescue => e
   # no-op if e.message !~ /@ rb_sysopen -/
   warn(e.message.split(' @ rb_sysopen - ').reverse.join(': '))
