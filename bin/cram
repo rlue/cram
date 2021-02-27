@@ -11,11 +11,36 @@ Signal.trap('PIPE', 'SYSTEM_DEFAULT') if Signal.list.include?('PIPE')
 # Parse opts/args --------------------------------------------------------------
 
 require 'optparse'
+require 'pathname'
+
+ENV['XDG_DATA_HOME'] ||= Pathname.new(Dir.home).join('.local', 'share').to_s
+
+COMMAND_LOAD_PATH = []
+  .push(Pathname.new(ENV['XDG_DATA_HOME']))
+  .push(Pathname.new(__dir__).join('..', 'share'))
+  .map { |path| path.join('cram') }
+  .select(&File.method(:directory?))
+  .freeze
+
+installed_commands = COMMAND_LOAD_PATH
+  .map do |share|
+    Dir[share.join('**', '*')]
+      .select(&File.method(:file?))
+      .map { |entries| entries.delete_prefix("#{share}/") }
+  end
+  .flatten
+  .map { |command_path| command_path.tr('/', ':') }
+  .uniq
+  .sort
 
 parser = OptionParser.new do |opts|
   opts.version = Cram::VERSION
   opts.banner  = <<~BANNER
     Usage: cram [-v | --version] [-h | --help] command [<args>]
+
+    #{['Commands:', *installed_commands].join("\n    ")}
+
+    Use ``cram <command> --help'' to learn more about each command.
   BANNER
 end
 
@@ -32,15 +57,6 @@ command = ARGV.shift
 # Run command ------------------------------------------------------------------
 
 require 'pathname'
-
-ENV['XDG_DATA_HOME'] ||= Pathname.new(Dir.home).join('.local', 'share').to_s
-
-COMMAND_LOAD_PATH = []
-  .push(Pathname.new(ENV['XDG_DATA_HOME']))
-  .push(Pathname.new(__dir__).join('..', 'share'))
-  .map { |path| path.join('cram') }
-  .select(&File.method(:directory?))
-  .freeze
 
 COMMAND_LOAD_PATH
   .map { |d| d.join(*command.split(':')) }
