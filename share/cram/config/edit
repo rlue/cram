@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Handle shell errors (Ctrl+C / broken pipes) ----------------------------------
+# borrowed from https://github.com/chocolateboy/cli-pasta
+Signal.trap('INT', 'SYSTEM_DEFAULT') if Signal.list.include?('INT')
+Signal.trap('PIPE', 'SYSTEM_DEFAULT') if Signal.list.include?('PIPE')
+
+# Parse opts -------------------------------------------------------------------
+
+require 'optparse'
+
+parser = OptionParser.new do |opts|
+  opts.banner = <<~BANNER
+    Usage: cram config:edit
+    Open cram's config file in a text editor.
+
+    cram's config file is stored under $XDG_CONFIG_HOME/cram.yml
+    ($XDG_CONFIG_HOME defaults to ~/.config/).
+  BANNER
+end
+
+begin
+  parser.parse!
+rescue OptionParser::ParseError => e
+  warn(e.message)
+  warn(parser.help)
+  exit 1
+end
+
+# Core logic -------------------------------------------------------------------
+
+require 'fileutils'
+require 'pathname'
+
+CONFIG_DIR = Pathname.new(ENV['XDG_CONFIG_HOME'] || "#{ENV['HOME']}/.config").freeze
+
+FileUtils.mkdir_p(CONFIG_DIR)
+
+system(ENV['EDITOR'] || 'vi', CONFIG_DIR.join('cram.yml').to_s)
