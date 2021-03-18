@@ -1,8 +1,6 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require_relative '../lib/cram'
-
 # Handle shell errors (Ctrl+C / broken pipes) ----------------------------------
 # borrowed from https://github.com/chocolateboy/cli-pasta
 Signal.trap('INT', 'SYSTEM_DEFAULT') if Signal.list.include?('INT')
@@ -34,7 +32,7 @@ installed_commands = COMMAND_LOAD_PATH
   .sort
 
 parser = OptionParser.new do |opts|
-  opts.version = Cram::VERSION
+  opts.version = '0.0.1'
   opts.banner  = <<~BANNER
     Usage: cram [-v | --version] [-h | --help] command [<args>]
 
