@@ -11,20 +11,18 @@ Signal.trap('PIPE', 'SYSTEM_DEFAULT') if Signal.list.include?('PIPE')
 require 'optparse'
 require 'pathname'
 
-ENV['XDG_DATA_HOME'] ||= Pathname.new(Dir.home).join('.local', 'share').to_s
-
 COMMAND_LOAD_PATH = []
-  .push(Pathname.new(ENV['XDG_DATA_HOME']))
-  .push(Pathname.new(__dir__).join('..', 'share'))
-  .map { |path| path.join('cram') }
+  .push(Pathname.new(Dir.home).join('.local'))
+  .push(Pathname.new(__dir__).join('..'))
+  .map { |path| path.join('lib', 'cram') }
   .select(&File.method(:directory?))
   .freeze
 
 installed_commands = COMMAND_LOAD_PATH
-  .map do |share|
-    Dir[share.join('**', '*')]
+  .map do |lib|
+    Dir[lib.join('**', '*')]
       .select(&File.method(:file?))
-      .map { |entries| entries.delete_prefix("#{share}/") }
+      .map { |entries| entries.delete_prefix("#{lib}/") }
   end
   .flatten
   .map { |command_path| command_path.tr('/', ':') }
