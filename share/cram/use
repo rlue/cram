@@ -92,7 +92,7 @@ def hash_to_command_line(command, options)
 end
 
 CONFIG_FILE = []
-  .push(*ENV['XDG_CONFIG_HOME']&.split(':')&.map(&Pathname.method(:new)))
+  .push(Pathname.new(ENV['XDG_CONFIG_HOME']))
   .push(Pathname.new(Dir.home).join('.config'))
   .map { |d| d.join('cram.yml') }
   .find(&File.method(:file?))
