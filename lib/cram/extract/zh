@@ -1,0 +1,97 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Handle shell errors (Ctrl+C / broken pipes) ----------------------------------
+# borrowed from https://github.com/chocolateboy/cli-pasta
+Signal.trap('INT', 'SYSTEM_DEFAULT') if Signal.list.include?('INT')
+Signal.trap('PIPE', 'SYSTEM_DEFAULT') if Signal.list.include?('PIPE')
+
+# Parse opts -------------------------------------------------------------------
+
+require 'optparse'
+
+parser = OptionParser.new do |opts|
+  opts.banner = <<~BANNER
+    Usage: cram extract:zh [<options>]
+    Print only the Chinese characters from input,
+    one character per line, without duplicates.
+
+    With no <file> (or when <file> is -), read standard input.
+
+  BANNER
+
+  opts.on(
+    '-i=FILE', '--ignore=FILE',
+    'exclude characters from <file> (or first field of <file.csv|file.tsv>)'
+  )
+
+  opts.on(
+    '-s=SYSTEM', '--system=SYSTEM',
+    %i[traditional simplified],
+    'return only [traditional|simplified] characters'
+  )
+end
+
+begin
+  params = {}
+  parser.parse!(into: params)
+rescue OptionParser::ParseError => e
+  warn(e.message)
+  warn(parser.help)
+  exit 1
+end
+
+# Core logic -------------------------------------------------------------------
+
+require 'yaml'
+
+class String
+  def split_zh
+    split('').uniq.select { |t| t.match?(/\p{Han}/) }
+  end
+
+  def first_field(delimiter)
+    split(delimiter).first
+  end
+end
+
+DATA_DIR = Pathname.new(__dir__).join('../../../share/cram').freeze
+
+input_text = begin
+               ARGF.read.split_zh
+             rescue SystemCallError => e
+               warn(e.message.split(' @ rb_sysopen - ').reverse.join(': '))
+               exit 1
+             end
+
+if input_text.empty?
+  warn('no Chinese characters found')
+  exit 1
+end
+
+input_text -= begin
+                case params[:ignore]
+                when /\.csv$/
+                  File.readlines(params[:ignore]).map { |line| line.first_field(',') }
+                when /\.tsv$/
+                  File.readlines(params[:ignore]).map { |line| line.first_field("\t") }
+                when String
+                  File.read(params[:ignore]).split_zh
+                else
+                  []
+                end
+              rescue SystemCallError => e
+                warn(e.message.split(' @ rb_sysopen - ').reverse.join(': '))
+                exit 1
+              end
+
+input_text -= case params[:system]
+              when :traditional
+                YAML.safe_load(File.read(DATA_DIR.join('zh/trad-vs-simp.yml')))['simplified']
+              when :simplified
+                YAML.safe_load(File.read(DATA_DIR.join('zh/trad-vs-simp.yml')))['traditional']
+              else
+                []
+              end
+
+puts input_text

@@ -1,100 +1,19 @@
-#!/usr/bin/env ruby
-# frozen_string_literal: true
-
-# Handle shell errors (Ctrl+C / broken pipes) ----------------------------------
-# borrowed from https://github.com/chocolateboy/cli-pasta
-Signal.trap('INT', 'SYSTEM_DEFAULT') if Signal.list.include?('INT')
-Signal.trap('PIPE', 'SYSTEM_DEFAULT') if Signal.list.include?('PIPE')
-
-# Parse opts -------------------------------------------------------------------
-
-require 'optparse'
-
-parser = OptionParser.new do |opts|
-  opts.banner = <<~BANNER
-    Usage: cram extract:zh [<options>]
-    Print only the Chinese characters from input,
-    one character per line, without duplicates.
-
-    With no <file> (or when <file> is -), read standard input.
-
-  BANNER
-
-  opts.on(
-    '-i=FILE', '--ignore=FILE',
-    'exclude characters from <file> (or first field of <file.csv|file.tsv>)'
-  )
-
-  opts.on(
-    '-s=SYSTEM', '--system=SYSTEM',
-    %i[traditional simplified],
-    'return only [traditional|simplified] characters'
-  )
-end
-
-begin
-  params = {}
-  parser.parse!(into: params)
-rescue OptionParser::ParseError => e
-  warn(e.message)
-  warn(parser.help)
-  exit 1
-end
-
-# Core logic -------------------------------------------------------------------
-
-require 'yaml'
-
-class String
-  def split_zh
-    split('').uniq.select { |t| t.match?(/\p{Han}/) }
-  end
-
-  def first_field(delimiter)
-    split(delimiter).first
-  end
-end
-
-input_text = begin
-               ARGF.read.split_zh
-             rescue SystemCallError => e
-               warn(e.message.split(' @ rb_sysopen - ').reverse.join(': '))
-               exit 1
-             end
-
-if input_text.empty?
-  warn('no Chinese characters found')
-  exit 1
-end
-
-input_text -= begin
-                case params[:ignore]
-                when /\.csv$/
-                  File.readlines(params[:ignore]).map { |line| line.first_field(',') }
-                when /\.tsv$/
-                  File.readlines(params[:ignore]).map { |line| line.first_field("\t") }
-                when String
-                  File.read(params[:ignore]).split_zh
-                else
-                  []
-                end
-              rescue SystemCallError => e
-                warn(e.message.split(' @ rb_sysopen - ').reverse.join(': '))
-                exit 1
-              end
-
-input_text -= case params[:system]
-              when :traditional
-                YAML.safe_load(DATA.read)['simplified']
-              when :simplified
-                YAML.safe_load(DATA.read)['traditional']
-              else
-                []
-              end
-
-puts input_text
-
-__END__
+# This file contains a list of all Chinese characters which appear
+# either a) only in Traditional Chinese or b) only in Simplified Chinese.
+#
+# Put another way, Traditional and Simplified are overlapping character sets;
+# "traditional" here lists the complement of the Simplified character set,
+# and vice versa.
+#
+# Note that some characters (like 面) appear in both systems,
+# but are homographs for multiple meanings in Simplified ("face"/"noodles")
+# while they represent only one word in Traditional (just "face").
+# This means that in some cases, context can help discern
+# when an "overlapping" character is used in a Simplified sense
+# (e.g., 「炒面」 is Simplified, but 「正面」 could be either).
+#
+# This list cannot be used to disambiguate in such cases.
+---
 traditional:
   - 㑯
   - 㑳

@@ -1,0 +1,82 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Handle shell errors (Ctrl+C / broken pipes) ----------------------------------
+# borrowed from https://github.com/chocolateboy/cli-pasta
+Signal.trap('INT', 'SYSTEM_DEFAULT') if Signal.list.include?('INT')
+Signal.trap('PIPE', 'SYSTEM_DEFAULT') if Signal.list.include?('PIPE')
+
+# Parse opts -------------------------------------------------------------------
+
+require 'optparse'
+
+parser = OptionParser.new do |opts|
+  opts.banner = <<~BANNER
+    Usage: cram append:cangjie [<options>] <file>
+    For each line of a given input CSV,
+    take the Chinese character in the first field
+    and append its Cangjie key sequence as a new field.
+
+    With no <file> (or when <file> is -), read standard input.
+
+    Supports Traditional Chinese characters only.
+
+  BANNER
+
+  opts.on(
+    '-d=DELIMITER', '--delimiter=DELIMITER',
+    'specify the CSV column separator (default: ,)'
+  )
+
+  opts.on(
+    '--[no-]strict',
+    'abort on unexpected input or when lookup fails (default: on)',
+    '(--no-strict: append an empty field)'
+  )
+
+  opts.on(
+    '-f=FORMAT', '--format=FORMAT',
+    %i[radicals alphabet],
+    'show Cangjie codes as [radicals|alphabet]'
+  )
+end
+
+begin
+  params = {
+    delimiter: ',',
+    format: :radicals,
+    strict: true
+  }
+  parser.parse!(into: params)
+rescue OptionParser::ParseError => e
+  warn(e.message)
+  warn(parser.help)
+  exit 1
+end
+
+# Core logic -------------------------------------------------------------------
+
+require 'pathname'
+require 'yaml'
+require 'csv'
+
+DATA_DIR = Pathname.new(__dir__).join('../../../share/cram').freeze
+CANGJIE = YAML.safe_load(File.read(DATA_DIR.join('zh/tw/cangjie.yml'))).freeze
+
+CSV.filter(col_sep: params[:delimiter]) do |row|
+  raise "unexpected value: #{row.first}" if params[:strict] && !CANGJIE['character_codes'].key?(row.first)
+
+  row << case params[:format]
+         when :radicals
+           CANGJIE['character_codes'][row.first]
+             &.split('')
+             &.map { |l| CANGJIE['keynames'][l] }
+             &.join('')
+         when :alphabet
+           CANGJIE['character_codes'][row.first].upcase
+         end
+rescue => e
+  # no-op if e.message !~ /@ rb_sysopen -/
+  warn(e.message.split(' @ rb_sysopen - ').reverse.join(': '))
+  exit 1
+end

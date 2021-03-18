@@ -2,3 +2,4 @@
 * Handle CSV headers
 * `append:zh-compounds`: add CLI option to specify TOP/HSK/custom
   dictionary file
+* Use `YAML.load_file` for conciseness

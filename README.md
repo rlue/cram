@@ -105,18 +105,18 @@ for extracting Hebrew text from a document,
 place your script here:
 
 ```
-📁 $HOME/.local/share (or $XDG_DATA_HOME)
+📁 $HOME/.local/lib
 └── 📁 cram
     └── 📁 extract
         └── 🗎 he
 ```
 
 You can even create bare (non-namespaced) commands
-by saving custom scripts directly to `share/cram/`.
+by saving custom scripts directly to `lib/cram/`.
 To create a `cram foo` command, use:
 
 ```
-📁 $HOME/.local/share
+📁 $HOME/.local/lib
 └── 📁 cram
     └── 🗎 foo
 ```
