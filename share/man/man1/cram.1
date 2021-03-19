@@ -1,0 +1,85 @@
+.TH "CRAM" "1" "2021/03/18" "Cram 0\&.0\&.1" "Cram Manual"
+.SH "NAME"
+cram \- a toolkit for automating Anki flashcard creation
+.SH "SYNOPSIS"
+\fIcram\fR [\-\-version] [\-\-help] [<args>]
+.SH "DESCRIPTION"
+Cram is a collection of shell scripts for generating and manipulating CSVs \
+which can then be imported as notes into Anki.
+.PP
+These shell scripts (or "Cram commands") can be invoked \
+by passing in their name as the first argument. For instance,
+.PP
+.RS 4
+.nf
+$ cram extract:zh <\fIfile\fR>
+.fi
+.RE
+.PP
+executes the ``extract:zh'' command.
+.PP
+These commands can then be composed into a UNIX pipeline \
+to produce rich, complex study notes in CSV format:
+.PP
+.RS 4
+.nf
+$ cram extract:zh input.txt \\  # print only Chinese characters from input (one per line, no duplicates)
+  | cram append:zhuyin \\       # add a field for each character’s 注音 pronunciation
+  | cram append:cangjie \\      # add a field for each character’s cangjie code
+  | cram append:zh-compounds \\ # add a field for compound words containing each character
+  >> output.csv
+.fi
+.RE
+.PP
+Then, import the resulting CSV into Anki (or the SRS system of your choice).
+.PP
+See the \fBCONFIGURATION\fR section below \
+to learn how to create a one-line shortcut \
+for complex pipelines like the one above.
+.SH "COMMANDS"
+For a list of available commands, use ``cram --list''.
+.PP
+To learn more about a command, use ``cram <\fIcommand\fR> --help''.
+.SH "CONFIGURATION"
+Cram reads a configuration file at $XDG_CONFIG_HOME/cram.yml \
+(or ~/.config/cram.yml if $XDG_CONFIG_HOME is not set).
+Use this file to store "profiles" of your most commonly-used pipelines.
+.PP
+For instance, the following configuration file defines a ``zh-literacy'' profile for the pipeline shown in the \fBDESCRIPTION\fR section:
+.PP
+.RS 4
+.nf
+---
+profiles:
+  zh-literacy:
+    extract:zh:
+    append:zhuyin:
+    append:cangjie:
+    append:zh-compounds:
+    output:
+      path: ~/notes/chinese-characters.csv
+      append: true
+.fi
+.RE
+.PP
+Execute this profile with ``cram use zh-literacy <\fIinput\fR>''.
+.PP
+Command-line options may be encoded as key-value pairs; e.g.,
+.PP
+.RS 4
+.nf
+append:cangjie:
+  strict: false
+  format: alphabet
+.fi
+.RE
+.PP
+encodes
+.PP
+.RS 4
+.nf
+$ cram append:cangjie --no-strict --format=alphabet
+.fi
+.RE
+.SH "LICENSE"
+Copyright (c) 2021 Ryan Lue, MIT License.
