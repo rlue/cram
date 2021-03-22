@@ -6,21 +6,21 @@ cram \- a toolkit for automating Anki flashcard creation
 .SH "DESCRIPTION"
 Cram is a collection of shell scripts for generating and manipulating CSVs \
 which can then be imported as notes into Anki.
-.PP
+.sp
 These shell scripts (or "Cram commands") can be invoked \
 by passing in their name as the first argument. For instance,
-.PP
+.sp
 .RS 4
 .nf
 $ cram extract:zh <\fIfile\fR>
 .fi
 .RE
-.PP
+.sp
 executes the ``extract:zh'' command.
-.PP
+.sp
 These commands can then be composed into a UNIX pipeline \
 to produce rich, complex study notes in CSV format:
-.PP
+.sp
 .RS 4
 .nf
 $ cram extract:zh input.txt \\  # print only Chinese characters from input (one per line, no duplicates)
@@ -30,23 +30,78 @@ $ cram extract:zh input.txt \\  # print only Chinese characters from input (one 
   >> output.csv
 .fi
 .RE
-.PP
+.sp
 Then, import the resulting CSV into Anki (or the SRS system of your choice).
-.PP
+.sp
 See the \fBCONFIGURATION\fR section below \
 to learn how to create a one-line shortcut \
 for complex pipelines like the one above.
+.SH "DESIGN"
+Cram is built according to the UNIX philosophy:
+.sp
+.RS 4
+\h'-04'\(bu\h'+03'\c
+Write programs that do one thing and do it well.
+.sp
+\h'-04'\(bu\h'+03'\c
+Write programs to work together.
+.sp
+\h'-04'\(bu\h'+03'\c
+Write programs to handle text streams, because that is a universal interface.
+.RE
+.sp
+Like git, cram is just a thin wrapper around collection of scripts \
+which each perform one specific task. \
+These tasks all operate on text streams, \
+incrementally transforming them to produce an importable CSV.
 .SH "COMMANDS"
-For a list of available commands, use ``cram --list''.
-.PP
-To learn more about a command, use ``cram <\fIcommand\fR> --help''.
+Use ``cram --help'' to see a list of available commands.
+.sp
+Use ``cram <\fIcommand\fR> --help'' to learn more about a command.
+.SS Built-in "types"
+Most cram commands are organized into different namespaces \
+based on what they do or how they work:
+.TP
+.B extract
+For extracting study prompts (e.g., vocabulary words) from raw input. Can accept various types of input; outputs a one-field CSV text stream.
+.TP
+.B append
+For adding fields to an existing CSV, usu. based on the value in the first field. Accepts and outputs CSV text streams only.
+.TP
+.B config
+For manipulating Cram's config file.
+.SS Creating your own commands
+Cram can be extended with your own custom scripts. \
+They may be written in any language and work however you like \
+(remember, cram is just a thin wrapper for invoking scripts \
+and composing them into a pipeline), \
+but if you wish to combine them with existing commands,
+they must consume/manipulate/produce CSV text streams.
+.sp
+Simply place your script under ``~/.local/lib/cram'', \
+using directories to match your desired namespaces. \
+For instance, to create a new ``extract:he'' command \
+for extracting Hebrew text from a document, \
+place your script here:
+.sp
+.RS 4
+.nf
+📁 ~/.local/lib
+└── 📁 cram
+    └── 📁 extract
+        └── 🗎 he
+.fi
+.RE
+.sp
+All CLI arguments and options will be passed directly to your script.
 .SH "CONFIGURATION"
 Cram reads a configuration file at $XDG_CONFIG_HOME/cram.yml \
 (or ~/.config/cram.yml if $XDG_CONFIG_HOME is not set).
 Use this file to store "profiles" of your most commonly-used pipelines.
-.PP
-For instance, the following configuration file defines a ``zh-literacy'' profile for the pipeline shown in the \fBDESCRIPTION\fR section:
-.PP
+.sp
+For instance, the following configuration file defines a ``zh-literacy'' profile \
+for the pipeline shown in the \fBDESCRIPTION\fR section:
+.sp
 .RS 4
 .nf
 ---
@@ -61,11 +116,11 @@ profiles:
       append: true
 .fi
 .RE
-.PP
+.sp
 Execute this profile with ``cram use zh-literacy <\fIinput\fR>''.
-.PP
+.sp
 Command-line options may be encoded as key-value pairs; e.g.,
-.PP
+.sp
 .RS 4
 .nf
 append:cangjie:
@@ -73,9 +128,9 @@ append:cangjie:
   format: alphabet
 .fi
 .RE
-.PP
+.sp
 encodes
-.PP
+.sp
 .RS 4
 .nf
 $ cram append:cangjie --no-strict --format=alphabet
