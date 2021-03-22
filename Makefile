@@ -1,3 +1,4 @@
+PREFIX ?= /usr/local
 version := $(shell cat version)
 project_files := $(shell find bin/ lib/ share/ -type f)
 fpm_global_opts = --package $@ \
@@ -7,6 +8,31 @@ fpm_global_opts = --package $@ \
 	          --depends ruby \
 	          --prefix /usr \
 	          --force
+
+.PHONY: null
+null:
+
+.PHONY: install
+install:
+	rm -rf "$(DESTDIR)$(PREFIX)/bin/cram" \
+	       "$(DESTDIR)$(PREFIX)/lib/cram" \
+	       "$(DESTDIR)$(PREFIX)/share/cram" \
+	       $(DESTDIR)$(PREFIX)/share/man/man1/cram*
+	mkdir -p "$(DESTDIR)$(PREFIX)/bin" "$(PREFIX)/lib" "$(PREFIX)/share"
+	cp -av bin/cram "$(DESTDIR)$(PREFIX)/bin/"
+	cp -av lib/cram/ "$(DESTDIR)$(PREFIX)/lib/"
+	cp -av share/cram/ "$(DESTDIR)$(PREFIX)/share/"
+	mkdir -p "$(DESTDIR)$(PREFIX)/share/man/man1"
+	gzip share/man/man*/*
+	cp -av share/man/man1/cram* "$(DESTDIR)$(PREFIX)/share/man/man1/"
+	gunzip share/man/man*/*
+
+.PHONY: uninstall
+uninstall:
+	rm -rf "$(DESTDIR)$(PREFIX)/bin/cram" \
+	       "$(DESTDIR)$(PREFIX)/lib/cram" \
+	       "$(DESTDIR)$(PREFIX)/share/cram" \
+	       $(DESTDIR)$(PREFIX)/share/man/man1/cram*
 
 .PHONY: dist
 dist: deb rpm pacman
