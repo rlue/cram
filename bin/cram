@@ -42,13 +42,14 @@ end
 
 begin
   parser.order!
-rescue OptionParser::ParseError => e
+  command = ARGV.shift
+
+  raise OptionParser::ParseError.new('no command given') if command.nil?
+rescue => e
   warn(e.message)
-  warn(parser.help)
+  warn(parser.help) if e.is_a?(OptionParser::ParseError)
   exit 1
 end
-
-command = ARGV.shift
 
 # Run command ------------------------------------------------------------------
 
