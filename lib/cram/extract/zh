@@ -43,6 +43,7 @@ end
 
 # Core logic -------------------------------------------------------------------
 
+require 'pathname'
 require 'yaml'
 
 class String

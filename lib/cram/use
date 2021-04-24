@@ -64,7 +64,6 @@ end
 # Core logic -------------------------------------------------------------------
 
 require 'yaml'
-require 'pathname'
 require 'open3'
 
 def hash_to_command_line(command, options)
@@ -91,10 +90,9 @@ def hash_to_command_line(command, options)
   ).join(' ')
 end
 
-CONFIG_FILE = []
-  .push(Pathname.new(ENV['XDG_CONFIG_HOME']))
-  .push(Pathname.new(Dir.home).join('.config'))
-  .map { |d| d.join('cram.yml') }
+CONFIG_FILE = [ENV['XDG_CONFIG_HOME'], "#{Dir.home}/.config"]
+  .compact
+  .map { |d| "#{d}/cram.yml" }
   .find(&File.method(:file?))
   .freeze
 
