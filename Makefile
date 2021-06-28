@@ -7,7 +7,11 @@ fpm_global_opts = --package $@ \
 	          --version $(version) \
 	          --depends ruby \
 	          --prefix /usr \
-	          --force
+	          --force \
+		  --description "A toolkit for automating Anki flashcard creation" \
+		  --license MIT \
+		  --vendor "" \
+		  --url "https://github.com/rlue/cram"
 
 .PHONY: null
 null:
