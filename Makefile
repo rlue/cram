@@ -13,11 +13,7 @@ fpm_global_opts = --package $@ \
 null:
 
 .PHONY: install
-install:
-	rm -rf "$(DESTDIR)$(PREFIX)/bin/cram" \
-	       "$(DESTDIR)$(PREFIX)/lib/cram" \
-	       "$(DESTDIR)$(PREFIX)/share/cram" \
-	       $(DESTDIR)$(PREFIX)/share/man/man1/cram*
+install: uninstall
 	mkdir -p "$(DESTDIR)$(PREFIX)/bin" "$(PREFIX)/lib" "$(PREFIX)/share"
 	cp -av bin/cram "$(DESTDIR)$(PREFIX)/bin/"
 	cp -av lib/cram/ "$(DESTDIR)$(PREFIX)/lib/"
