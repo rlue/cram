@@ -1,0 +1,115 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Handle shell errors (Ctrl+C / broken pipes) ----------------------------------
+# borrowed from https://github.com/chocolateboy/cli-pasta
+Signal.trap('INT', 'SYSTEM_DEFAULT') if Signal.list.include?('INT')
+Signal.trap('PIPE', 'SYSTEM_DEFAULT') if Signal.list.include?('PIPE')
+
+# Parse opts -------------------------------------------------------------------
+
+require 'optparse'
+
+parser = OptionParser.new do |opts|
+  opts.banner = <<~BANNER
+    Usage: cram append:google-images [<options>] <file>
+    For each line of a given input CSV,
+    take the the first field and append
+    the first Google Images search result for it.
+
+    With no <file> (or when <file> is -), read standard input.
+
+    Requires:
+
+      * a Google Programmable Search Engine
+        with "image search" and "search the entire web" enabled
+        <https://programmablesearchengine.google.com/>
+      * a Google Cloud API key
+        <https://console.cloud.google.com/apis/credentials>
+
+  BANNER
+
+  opts.on(
+    '-d=DELIMITER', '--delimiter=DELIMITER',
+    'specify the CSV column separator (default: ,)'
+  )
+
+  opts.on(
+    '--[no-]strict',
+    'abort on unexpected input (default: on)',
+    '(--no-strict: append an empty field)'
+  )
+
+  opts.on(
+    '-m=PATH', '--media-dir=PATH',
+    "the path to Anki's collection.media/ directory (required)",
+  )
+
+  opts.on(
+    '--search-engine-id=SEARCH_ENGINE_ID',
+    "the path to Anki's collection.media/ directory (required)",
+  )
+
+  opts.on(
+    '--api-key=API_KEY',
+    "the path to Anki's collection.media/ directory (required)",
+  )
+end
+
+MEDIA_DIR = case Gem::Platform.local.os
+            when 'linux';   ENV['XDG_DATA_HOME'] || '~/.local/share'
+            when 'darwin';  '~/Library/Application Support'
+            when 'mingw32'; ENV['APPDATA']
+            end.then(&File.method(:expand_path))
+              .then { |data_dir| "#{data_dir}/Anki2/*/collection.media" }
+              .then(&Dir.method(:glob)).first.freeze
+
+begin
+  params = { delimiter: ',', strict: true, 'media-dir': MEDIA_DIR }
+  parser.parse!(into: params)
+
+  raise("#{params[:'media-dir']}: invalid directory") if !File.directory?(params[:'media-dir'])
+  raise("#{params[:'media-dir']}: permission denied") if !File.writable?(params[:'media-dir'])
+  raise('--search-engine-id option is required') if !params[:'search-engine-id']
+  raise('--api-key option is required') if !params[:'api-key']
+rescue OptionParser::ParseError => e
+  warn(e.message)
+  warn(parser.help)
+  exit 1
+rescue => e
+  warn(e.message)
+  exit 1
+end
+
+# Core logic -------------------------------------------------------------------
+
+require 'csv'
+require 'pathname'
+require 'net/http'
+require 'json'
+require 'open-uri'
+
+API_ENDPOINT = '/customsearch/v1?key=%{api-key}&cx=%{search-engine-id}&searchType=image&fileType=jpg&q=%{query}'.freeze
+
+API_REQUEST = Net::HTTP.new('www.googleapis.com', 443)
+  .tap { |https| https.use_ssl = true }
+
+CSV.filter(col_sep: params[:delimiter]) do |row|
+  if row.first.empty?
+    params[:strict] ? raise("first field contains no text") : next
+  end
+
+  output_file = Pathname.new(params[:'media-dir']).join("google-images_#{row.first}.jpg")
+
+  API_REQUEST
+    .get(API_ENDPOINT % { **params, query: row.first }).body
+    .then(&JSON.method(:parse)).dig('items', 0, 'link')
+    .then(&URI.method(:open))
+    .then { |image| IO.copy_stream(image, output_file) }
+
+  row << %(<img src="#{output_file.basename}">)
+rescue => e
+  # no-op if e.message !~ /@ rb_sysopen -/
+  warn(e.message.split(' @ rb_sysopen - ').reverse.join(': '))
+  exit 1
+end

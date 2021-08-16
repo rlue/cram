@@ -4,3 +4,7 @@
   dictionary file
 * Use `YAML.load_file` for conciseness
 * Rename “profiles” to “pipelines”
+* Enhance append:google-images to search for all image formats—not just .jpg
+  (and name the resulting output file accordingly!)
+* Add interactive mode to append:google-images
+  (allow the user to select from n candidate images)
