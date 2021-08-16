@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require 'pry'
+
 # Handle shell errors (Ctrl+C / broken pipes) ----------------------------------
 # borrowed from https://github.com/chocolateboy/cli-pasta
 Signal.trap('INT', 'SYSTEM_DEFAULT') if Signal.list.include?('INT')
@@ -46,15 +48,22 @@ parser = OptionParser.new do |opts|
 
   opts.on(
     '-m=PATH', '--media-dir=PATH',
-    "the path to Anki's collection.media/ directory (required)",
+    "a custom path to Anki's media directory",
   )
 end
 
+MEDIA_DIR = case Gem::Platform.local.os
+            when 'linux';   ENV['XDG_DATA_HOME'] || '~/.local/share'
+            when 'darwin';  '~/Library/Application Support'
+            when 'mingw32'; ENV['APPDATA']
+            end.then(&File.method(:expand_path))
+              .then { |data_dir| "#{data_dir}/Anki2/*/collection.media" }
+              .then(&Dir.method(:glob)).first.freeze
+
 begin
-  params = { delimiter: ',', strict: true }
+  params = { delimiter: ',', strict: true, 'media-dir': MEDIA_DIR }
   parser.parse!(into: params)
 
-  raise('--media-dir option is required') if !params[:'media-dir']
   raise("#{params[:'media-dir']}: invalid directory") if !File.directory?(params[:'media-dir'])
   raise("#{params[:'media-dir']}: permission denied") if !File.writable?(params[:'media-dir'])
 rescue OptionParser::ParseError => e
