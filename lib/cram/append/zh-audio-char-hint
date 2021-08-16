@@ -17,7 +17,7 @@ parser = OptionParser.new do |opts|
     take the Chinese character in the first field
     and append an audio snippet of its context in a compound word
     (e.g., for 複, append 🔊「複詞的複」).
-    Use the word alone if no word is found.
+    Use the character alone if no compound word is found.
 
     With no <file> (or when <file> is -), read standard input.
 
