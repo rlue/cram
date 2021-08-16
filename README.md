@@ -86,7 +86,7 @@ $ cram use zh-literacy input.txt
 ```yml
 # ~/.config/cram.yml
 
-profiles:
+pipelines:
   zh-literacy:
     extract:zh:
     append:zhuyin:

@@ -97,15 +97,15 @@ All CLI arguments and options will be passed directly to your script.
 .SH "CONFIGURATION"
 Cram reads a configuration file at $XDG_CONFIG_HOME/cram.yml \
 (or ~/.config/cram.yml if $XDG_CONFIG_HOME is not set).
-Use this file to store "profiles" of your most commonly-used pipelines.
+Use this file to store your most commonly-used pipelines.
 .sp
-For instance, the following configuration file defines a ``zh-literacy'' profile \
-for the pipeline shown in the \fBDESCRIPTION\fR section:
+For instance, the configuration file below defines a ``zh-literacy'' pipeline \
+based on the one shown in the \fBDESCRIPTION\fR section:
 .sp
 .RS 4
 .nf
 ---
-profiles:
+pipelines:
   zh-literacy:
     extract:zh:
     append:zhuyin:
@@ -117,7 +117,7 @@ profiles:
 .fi
 .RE
 .sp
-Execute this profile with ``cram use zh-literacy <\fIinput\fR>''.
+Run this pipeline with ``cram use zh-literacy <\fIinput\fR>''.
 .sp
 Command-line options may be encoded as key-value pairs; e.g.,
 .sp

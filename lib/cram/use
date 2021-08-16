@@ -12,9 +12,9 @@ require 'optparse'
 
 parser = OptionParser.new do |opts|
   opts.banner = <<~BANNER
-    Usage: cram use <profile> <file>
+    Usage: cram use <pipeline> <file>
     Execute a pipeline of cram commands
-    stored as a "profile" in cram's config file.
+    stored as a "pipeline" in cram's config file.
 
     With no <file> (or when <file> is -), read standard input.
 
@@ -26,9 +26,9 @@ parser = OptionParser.new do |opts|
           | cram append:zh-compounds \\
           >> ~/notes/chinese-characters.csv
 
-    define and use the ``zh-literacy'' profile below:
+    define and use the ``zh-literacy'' pipeline below:
 
-        profiles:
+        pipelines:
           zh-literacy:
             extract:zh:
               ignore: ~/notes/zh-chars.csv
@@ -53,10 +53,10 @@ rescue OptionParser::ParseError => e
   exit 1
 end
 
-PROFILE = ARGV.shift.freeze
+PIPELINE = ARGV.shift.freeze
 
-if PROFILE.nil?
-  warn('no profile specified')
+if PIPELINE.nil?
+  warn('no pipeline specified')
   warn(parser.help)
   exit 1
 end
@@ -98,7 +98,7 @@ CONFIG_FILE = [ENV['XDG_CONFIG_HOME'], "#{Dir.home}/.config"]
 
 pipeline = begin
              YAML.safe_load_file(CONFIG_FILE)
-               .dig('profiles', PROFILE)
+               .dig('pipelines', PIPELINE)
                .tap { |p| raise "#{CONFIG_FILE}: config format invalid" unless p.is_a?(Hash) }
            rescue TypeError
              raise 'no config file found'
