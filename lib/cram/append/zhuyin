@@ -52,7 +52,7 @@ require 'pathname'
 require 'yaml'
 
 DATA_DIR = Pathname.new(__dir__).join('../../../share/cram').freeze
-ZHUYIN_TABLE = YAML.safe_load(File.read(DATA_DIR.join('zh/tw/zhuyin.yml'))).freeze
+ZHUYIN_TABLE = YAML.safe_load_file(DATA_DIR.join('zh/tw/zhuyin.yml')).freeze
 
 CSV.filter(col_sep: params[:delimiter]) do |row|
   raise "unexpected value: #{row.first}" if params[:strict] && !ZHUYIN_TABLE.key?(row.first)

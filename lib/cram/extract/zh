@@ -88,9 +88,9 @@ input_text -= begin
 
 input_text -= case params[:system]
               when :traditional
-                YAML.safe_load(File.read(DATA_DIR.join('zh/trad-vs-simp.yml')))['simplified']
+                YAML.safe_load_file(DATA_DIR.join('zh/trad-vs-simp.yml'))['simplified']
               when :simplified
-                YAML.safe_load(File.read(DATA_DIR.join('zh/trad-vs-simp.yml')))['traditional']
+                YAML.safe_load_file(DATA_DIR.join('zh/trad-vs-simp.yml'))['traditional']
               else
                 []
               end

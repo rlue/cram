@@ -61,7 +61,7 @@ require 'yaml'
 require 'csv'
 
 DATA_DIR = Pathname.new(__dir__).join('../../../share/cram').freeze
-CANGJIE = YAML.safe_load(File.read(DATA_DIR.join('zh/tw/cangjie.yml'))).freeze
+CANGJIE = YAML.safe_load_file(DATA_DIR.join('zh/tw/cangjie.yml')).freeze
 
 CSV.filter(col_sep: params[:delimiter]) do |row|
   raise "unexpected value: #{row.first}" if params[:strict] && !CANGJIE['character_codes'].key?(row.first)

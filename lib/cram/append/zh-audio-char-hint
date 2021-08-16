@@ -98,7 +98,7 @@ require 'json'
 require 'base64'
 
 DATA_DIR = Pathname.new(__dir__).join('../../../share/cram').freeze
-WORDS = YAML.safe_load(File.read(DATA_DIR.join('zh/tw/compound-words.yml'))).freeze
+WORDS = YAML.safe_load_file(DATA_DIR.join('zh/tw/compound-words.yml')).freeze
 
 API_REQUEST = Net::HTTP.new('texttospeech.googleapis.com', 443)
   .tap { |https| https.use_ssl = true }

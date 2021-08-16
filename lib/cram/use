@@ -97,7 +97,7 @@ CONFIG_FILE = [ENV['XDG_CONFIG_HOME'], "#{Dir.home}/.config"]
   .freeze
 
 pipeline = begin
-             YAML.safe_load(File.read(CONFIG_FILE))
+             YAML.safe_load_file(CONFIG_FILE)
                .dig('profiles', PROFILE)
                .tap { |p| raise "#{CONFIG_FILE}: config format invalid" unless p.is_a?(Hash) }
            rescue TypeError
