@@ -23,13 +23,13 @@ See [Releases][] to download package files for Linux.
 $ brew install rlue/utils/cram
 
 # Debian / Ubuntu
-$ sudo dpkg -i cram_0.0.1_amd64.deb
+$ sudo dpkg -i cram_0.0.2_amd64.deb
 
 # Red Hat / Fedora / CentOS
-$ sudo rpm -i cram-0.0.1-1.x86_64.rpm
+$ sudo rpm -i cram-0.0.2-1.x86_64.rpm
 
 # Arch Linux
-$ sudo pacman -U cram-0.0.1-1-x86_64.pkg.tar.zst
+$ sudo pacman -U cram-0.0.2-1-x86_64.pkg.tar.zst
 
 # from source
 $ git clone https://github.com/rlue/cram

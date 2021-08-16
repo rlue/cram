@@ -30,7 +30,7 @@ installed_commands = COMMAND_LOAD_PATH
   .sort
 
 parser = OptionParser.new do |opts|
-  opts.version = '0.0.1'
+  opts.version = '0.0.2'
   opts.banner  = <<~BANNER
     Usage: cram [-v | --version] [-h | --help] command [<args>]
 
