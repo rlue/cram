@@ -1,0 +1,13 @@
+_cram() {
+  COMP_WORDBREAKS=${COMP_WORDBREAKS//:} # see https://gist.github.com/trolzen/68b1c5037414a71f5decbf557bc5168d for more
+  COMPREPLY=()
+  cur="${COMP_WORDS[COMP_CWORD]}"
+
+  if [ "$COMP_CWORD" -eq 1 ]; then
+    COMPREPLY=( $(compgen -W "$(/home/rlue/src/cram/bin/cram commands)" -- "${cur}") )
+  else
+    COMPREPLY=($(compgen -f "${cur}"))
+  fi
+}
+
+complete -F _cram cram
