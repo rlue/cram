@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Handle shell errors (Ctrl+C / broken pipes) ----------------------------------
+# borrowed from https://github.com/chocolateboy/cli-pasta
+Signal.trap('INT', 'SYSTEM_DEFAULT') if Signal.list.include?('INT')
+Signal.trap('PIPE', 'SYSTEM_DEFAULT') if Signal.list.include?('PIPE')
+
+# Parse opts -------------------------------------------------------------------
+
+require 'optparse'
+
+parser = OptionParser.new do |opts|
+  opts.banner = <<~BANNER
+    Usage: cram commands
+    List all cram commands
+  BANNER
+end
+
+begin
+  parser.parse!
+rescue OptionParser::ParseError => e
+  warn(e.message)
+  warn(parser.help)
+  exit 1
+end
+
+# Core logic -------------------------------------------------------------------
+
+require 'pathname'
+
+COMMAND_LOAD_PATH = []
+  .push(Pathname.new(Dir.home).join('.local'))
+  .push(Pathname.new(__dir__).join('../..'))
+  .map { |path| path.join('lib', 'cram') }
+  .select(&File.method(:directory?))
+  .freeze
+
+installed_commands = COMMAND_LOAD_PATH
+  .map do |lib|
+    Dir[lib.join('**', '*')]
+      .select(&File.method(:file?))
+      .map { |entries| entries.delete_prefix("#{lib}/") }
+  end
+  .flatten
+  .map { |command_path| command_path.tr('/', ':') }
+  .uniq
+  .sort
+
+puts(installed_commands.join("\n"))
