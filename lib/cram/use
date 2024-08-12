@@ -40,7 +40,7 @@ parser = OptionParser.new do |opts|
               path: ~/notes/chinese-characters.csv
               append: true
 
-    Store cram's config file under $XDG_CONFIG_HOME/cram.yml
+    Store cram's config file under $XDG_CONFIG_HOME/cram/config.yml
     ($XDG_CONFIG_HOME defaults to ~/.config/).
   BANNER
 end
@@ -63,6 +63,7 @@ end
 
 # Core logic -------------------------------------------------------------------
 
+require 'pathname'
 require 'yaml'
 require 'open3'
 
@@ -92,7 +93,7 @@ end
 
 CONFIG_FILE = [ENV['XDG_CONFIG_HOME'], "#{Dir.home}/.config"]
   .compact
-  .map { |d| "#{d}/cram.yml" }
+  .map { |p| Pathname.new(p).join("cram", "config.yml") }
   .find(&File.method(:file?))
   .freeze
 

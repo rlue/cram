@@ -15,7 +15,7 @@ parser = OptionParser.new do |opts|
     Usage: cram config:edit
     Open cram's config file in a text editor.
 
-    cram's config file is stored under $XDG_CONFIG_HOME/cram.yml
+    cram's config file is stored under $XDG_CONFIG_HOME/cram/config.yml
     ($XDG_CONFIG_HOME defaults to ~/.config/).
   BANNER
 end
@@ -33,8 +33,8 @@ end
 require 'fileutils'
 require 'pathname'
 
-CONFIG_DIR = Pathname.new(ENV['XDG_CONFIG_HOME'] || "#{ENV['HOME']}/.config").freeze
+CONFIG_DIR = Pathname.new(ENV['XDG_CONFIG_HOME'] || "#{ENV['HOME']}/.config").join("cram").freeze
 
 FileUtils.mkdir_p(CONFIG_DIR)
 
-system(ENV['EDITOR'] || 'vi', CONFIG_DIR.join('cram.yml').to_s)
+system(ENV['EDITOR'] || 'vi', CONFIG_DIR.join('config.yml').to_s)

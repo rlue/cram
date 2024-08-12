@@ -1,5 +1,4 @@
-🧑‍🎓 Cram
-======
+# 🧑‍🎓 Cram
 
 Studying with [Anki](https://apps.ankiweb.net/)?
 Build “notes” (flash cards) faster with cram.
@@ -11,8 +10,7 @@ that can then be imported as notes in Anki.
 See the [Design](#design) section to learn how you can extend cram
 for your own purposes.)
 
-Installation
-------------
+## Installation
 
 Requires Ruby.
 
@@ -23,13 +21,13 @@ See [Releases][] to download package files for Linux.
 $ brew install rlue/utils/cram
 
 # Debian / Ubuntu
-$ sudo dpkg -i cram_0.0.3_amd64.deb
+$ sudo dpkg -i cram_0.0.4_amd64.deb
 
 # Red Hat / Fedora / CentOS
-$ sudo rpm -i cram-0.0.3-1.x86_64.rpm
+$ sudo rpm -i cram-0.0.4-1.x86_64.rpm
 
 # Arch Linux
-$ sudo pacman -U cram-0.0.3-1-x86_64.pkg.tar.zst
+$ sudo pacman -U cram-0.0.4-1-x86_64.pkg.tar.zst
 
 # from source
 $ git clone https://github.com/rlue/cram
@@ -39,8 +37,7 @@ $ make install  # undo with `make uninstall`
 
 [Releases]: https://github.com/rlue/cram/releases
 
-Usage
------
+## Usage
 
 ### Explicitly / verbosely
 
@@ -84,7 +81,7 @@ $ cram use zh-literacy input.txt
 ```
 
 ```yml
-# ~/.config/cram.yml
+# ~/.config/cram/config.yml
 
 pipelines:
   zh-literacy:
@@ -145,4 +142,4 @@ to your script.
 License
 -------
 
-© 2021 Ryan Lue. This project is licensed under the terms of the MIT License.
+© 2024 Ryan Lue. This project is licensed under the terms of the MIT License.
